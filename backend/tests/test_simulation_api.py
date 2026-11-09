@@ -3,7 +3,7 @@
 import json
 from dataclasses import FrozenInstanceError, replace
 from datetime import datetime
-from decimal import Decimal
+from decimal import ROUND_HALF_UP, Decimal
 
 import pytest
 from fastapi.testclient import TestClient
@@ -38,14 +38,16 @@ def test_generated_snapshot_has_exact_fixture_parity_and_valid_schema(scenario):
     snapshot = build_snapshot(report)
     assert snapshot == example(scenario)
     validator.validate(snapshot)
-    assert len(report.rooms) == len(snapshot["rooms"]) == 1
-    assert report.rooms[0].energy.baseline_kwh == Decimal("2.200")
+    expected_count = 4 if scenario == "campus-overview" else 1
+    assert len(report.rooms) == len(snapshot["rooms"]) == expected_count
+    assert all(room.energy.baseline_kwh == Decimal("2.200") for room in report.rooms)
     assert snapshot["summary"]["potentialSavingsKwh"] == sum(
         room["analysis"]["potentialSavingsKwh"] for room in snapshot["rooms"]
     )
-    assert snapshot["summary"]["potentialSavingsMyr"] == float(
-        report.rooms[0].energy.potential_savings_myr
+    expected_cost = (report.potential_savings_kwh * report.simulation.tariff_myr_per_kwh).quantize(
+        Decimal("0.01"), rounding=ROUND_HALF_UP
     )
+    assert snapshot["summary"]["potentialSavingsMyr"] == float(expected_cost)
 
 
 def test_generated_analysis_does_not_echo_precomputed_fixture_results(tmp_path):
@@ -142,7 +144,7 @@ def test_invalid_metadata_fails(tmp_path, field, value):
 
 
 @pytest.mark.parametrize("room_count", [0, 2, 4])
-def test_data_layer_does_not_silently_expand_classroom_count(tmp_path, room_count):
+def test_data_layer_rejects_empty_or_duplicate_classrooms(tmp_path, room_count):
     source = example()
     source["rooms"] *= room_count
     write_input(tmp_path, source)

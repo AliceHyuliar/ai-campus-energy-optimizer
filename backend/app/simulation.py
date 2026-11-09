@@ -11,6 +11,11 @@ SCENARIOS = (
     ("occupied-room", "Occupied room", "An occupied classroom with a class in session."),
     ("class-soon", "Class soon", "An empty room with a class starting in 10 minutes."),
     ("stale-sensor", "Stale sensor", "Occupancy is unknown because its sensor is stale."),
+    (
+        "campus-overview",
+        "Campus overview",
+        "Four simulated classrooms with idle, occupied, class-soon, and stale-sensor states.",
+    ),
 )
 SCENARIO_IDS = frozenset(item[0] for item in SCENARIOS)
 

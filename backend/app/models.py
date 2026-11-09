@@ -105,7 +105,10 @@ class SimulationState:
         datetime.strptime(self.snapshot_at, "%Y-%m-%dT%H:%M:%SZ")
         require_integer("analysis_window_minutes", self.analysis_window_minutes, 1, 1440)
         require_decimal("tariff_myr_per_kwh", self.tariff_myr_per_kwh)
-        if not isinstance(self.rooms, tuple) or len(self.rooms) != 1:
-            raise ValueError("The approved MVP supports exactly one classroom per scenario")
-        if not isinstance(self.rooms[0], RoomState):
-            raise ValueError("A structured room is required")
+        if not isinstance(self.rooms, tuple) or not self.rooms:
+            raise ValueError("A nonempty tuple of classrooms is required")
+        if not all(isinstance(room, RoomState) for room in self.rooms):
+            raise ValueError("Every classroom must be a structured room")
+        room_ids = [room.room_id for room in self.rooms]
+        if len(set(room_ids)) != len(room_ids):
+            raise ValueError("Classroom IDs must be unique within a snapshot")

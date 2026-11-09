@@ -15,7 +15,7 @@ VALIDATOR = Draft202012Validator(
     json.loads((ROOT / "contracts/snapshot.schema.json").read_text("utf-8")),
     format_checker=FormatChecker(),
 )
-SCENARIOS = ("idle-room", "occupied-room", "class-soon", "stale-sensor")
+SCENARIOS = ("idle-room", "occupied-room", "class-soon", "stale-sensor", "campus-overview")
 
 
 def verify() -> None:
@@ -43,9 +43,18 @@ def verify() -> None:
                 )
                 assert snapshot == expected
                 assert snapshot["ai"] == {"status": "not_connected", "explanation": None}
-                assert len(snapshot["rooms"]) == 1
+                assert len(snapshot["rooms"]) == (4 if scenario == "campus-overview" else 1)
                 if scenario == "stale-sensor":
                     assert snapshot["rooms"][0]["occupancy"] is None
+                if scenario == "campus-overview":
+                    assert [room["roomId"] for room in snapshot["rooms"]] == [
+                        "A101", "A102", "A103", "A104"
+                    ]
+                    assert snapshot["rooms"][3]["occupancy"] is None
+                    assert snapshot["summary"] == {
+                        "roomsMonitored": 4, "roomsNeedingReview": 2,
+                        "potentialSavingsKwh": 2.2, "potentialSavingsMyr": 1.1,
+                    }
                 checked += 1
                 print(f"PASS {base} {scenario}: schema and exact fixture parity")
             for method, path, status, code in (

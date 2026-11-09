@@ -7,7 +7,7 @@
   "required": ["apiVersion", "scenarioId", "dataSource", "snapshotAt", "analysisWindowMinutes", "tariffMyrPerKwh", "summary", "rooms", "ai"],
   "properties": {
     "apiVersion": { "const": "1.0" },
-    "scenarioId": { "enum": ["idle-room", "occupied-room", "class-soon", "stale-sensor"] },
+    "scenarioId": { "enum": ["idle-room", "occupied-room", "class-soon", "stale-sensor", "campus-overview"] },
     "dataSource": { "const": "simulation" },
     "snapshotAt": { "type": "string", "format": "date-time", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$" },
     "analysisWindowMinutes": { "type": "integer", "minimum": 1, "maximum": 1440 },

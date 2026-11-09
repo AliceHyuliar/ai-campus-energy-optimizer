@@ -54,8 +54,8 @@ def test_estimate_matches_documented_assumptions():
     assert Decimal(str(data["summary"]["potentialSavingsKwh"])) == expected
 
 
-def test_non_idle_examples_do_not_claim_savings():
-    for scenario in SCENARIO_IDS - {"idle-room"}:
+def test_protected_single_room_examples_do_not_claim_savings():
+    for scenario in ("occupied-room", "class-soon", "stale-sensor"):
         assert fixture(scenario)["summary"]["potentialSavingsKwh"] == 0
     stale = fixture("stale-sensor")["rooms"][0]
     assert stale["occupancy"] is None
