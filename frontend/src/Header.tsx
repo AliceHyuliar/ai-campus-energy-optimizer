@@ -12,10 +12,11 @@ export function Header({ scenario, setScenario }: HeaderProps) {
       </div>
 
       <div>
-        <label style={{ marginRight: '10px', fontWeight: 'bold' }}>Scenario: </label>
+        <label htmlFor="scenario" style={{ marginRight: '10px', fontWeight: 'bold' }}>Scenario: </label>
         <select 
+          id="scenario"
           value={scenario} 
-          onChange={(e: any) => setScenario(e.target.value)}
+          onChange={(e) => setScenario(e.target.value)}
           style={{ padding: '8px 12px', borderRadius: '6px', border: '1px solid #475569', backgroundColor: '#1e293b', color: '#fff', fontSize: '14px', cursor: 'pointer' }}
         >
           <option value="idle-room">Idle Room (Energy Waste)</option>

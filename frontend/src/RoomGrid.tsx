@@ -33,7 +33,7 @@ export function RoomGrid({ rooms }: RoomGridProps) {
                 borderRadius: '20px', 
                 fontSize: '12px', 
                 fontWeight: 'bold',
-                backgroundColor: room.analysis.status === 'review' ? '#ef4444' : '#10b981',
+                backgroundColor: room.analysis.status === 'review' ? '#ef4444' : room.analysis.status === 'unknown' ? '#92400e' : '#10b981',
                 color: '#fff' 
               }}>
                 {room.analysis.status.toUpperCase()}
@@ -41,8 +41,14 @@ export function RoomGrid({ rooms }: RoomGridProps) {
             </div>
 
             <p style={{ margin: '8px 0', fontSize: '14px', color: room.occupancy === null ? '#f59e0b' : '#cbd5e1' }}>
-              <strong>Occupancy:</strong> {room.occupancy === null ? '⚠️ Unknown (Stale Sensor)' : room.occupancy + ' People'}
+              <strong>Occupancy:</strong> {room.occupancy === null ? 'Unknown' : room.occupancy + ' People'}
             </p>
+            <p><strong>Sensor status:</strong> {room.sensorStatus}</p>
+            {room.sensorStatus !== 'fresh' && (
+              <p role="status" style={{ color: '#fbbf24' }}>Warning: {room.sensorStatus} sensor data. Occupancy is unknown.</p>
+            )}
+            <p><strong>Class in session:</strong> {room.classInSession ? 'Yes' : 'No'}</p>
+            <p><strong>Next class:</strong> {room.minutesToNextClass === null ? 'Unknown' : `${room.minutesToNextClass} minutes`}</p>
 
             <p style={{ margin: '8px 0', fontSize: '14px', color: '#cbd5e1' }}>
               <strong>Air Conditioner:</strong> {room.devices.acOn ? '🟢 ON' : '🔴 OFF'}
