@@ -1,0 +1,30 @@
+{
+  "apiVersion": "1.0",
+  "scenarioId": "stale-sensor",
+  "dataSource": "simulation",
+  "snapshotAt": "2026-11-09T00:00:00Z",
+  "analysisWindowMinutes": 60,
+  "tariffMyrPerKwh": 0.5,
+  "summary": {
+    "roomsMonitored": 1,
+    "roomsNeedingReview": 1,
+    "potentialSavingsKwh": 0,
+    "potentialSavingsMyr": 0
+  },
+  "rooms": [
+    {
+      "roomId": "A101",
+      "occupancy": null,
+      "sensorStatus": "stale",
+      "classInSession": false,
+      "minutesToNextClass": null,
+      "devices": { "acOn": true, "lightsOn": true },
+      "analysis": {
+        "status": "unknown",
+        "recommendationCode": "CHECK_SENSOR_DATA",
+        "potentialSavingsKwh": 0
+      }
+    }
+  ],
+  "ai": { "status": "not_connected", "explanation": null }
+}

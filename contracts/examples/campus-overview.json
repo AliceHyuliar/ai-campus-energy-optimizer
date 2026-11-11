@@ -1,0 +1,69 @@
+{
+  "apiVersion": "1.0",
+  "scenarioId": "campus-overview",
+  "dataSource": "simulation",
+  "snapshotAt": "2026-11-09T00:00:00Z",
+  "analysisWindowMinutes": 60,
+  "tariffMyrPerKwh": 0.5,
+  "summary": {
+    "roomsMonitored": 4,
+    "roomsNeedingReview": 2,
+    "potentialSavingsKwh": 2.2,
+    "potentialSavingsMyr": 1.1
+  },
+  "rooms": [
+    {
+      "roomId": "A101",
+      "occupancy": 0,
+      "sensorStatus": "fresh",
+      "classInSession": false,
+      "minutesToNextClass": 120,
+      "devices": { "acOn": true, "lightsOn": true },
+      "analysis": {
+        "status": "review",
+        "recommendationCode": "REVIEW_IDLE_ROOM",
+        "potentialSavingsKwh": 2.2
+      }
+    },
+    {
+      "roomId": "A102",
+      "occupancy": 24,
+      "sensorStatus": "fresh",
+      "classInSession": true,
+      "minutesToNextClass": 90,
+      "devices": { "acOn": true, "lightsOn": true },
+      "analysis": {
+        "status": "normal",
+        "recommendationCode": "NO_ACTION_OCCUPIED",
+        "potentialSavingsKwh": 0
+      }
+    },
+    {
+      "roomId": "A103",
+      "occupancy": 0,
+      "sensorStatus": "fresh",
+      "classInSession": false,
+      "minutesToNextClass": 10,
+      "devices": { "acOn": true, "lightsOn": true },
+      "analysis": {
+        "status": "normal",
+        "recommendationCode": "KEEP_ON_CLASS_SOON",
+        "potentialSavingsKwh": 0
+      }
+    },
+    {
+      "roomId": "A104",
+      "occupancy": null,
+      "sensorStatus": "stale",
+      "classInSession": false,
+      "minutesToNextClass": null,
+      "devices": { "acOn": true, "lightsOn": true },
+      "analysis": {
+        "status": "unknown",
+        "recommendationCode": "CHECK_SENSOR_DATA",
+        "potentialSavingsKwh": 0
+      }
+    }
+  ],
+  "ai": { "status": "not_connected", "explanation": null }
+}
