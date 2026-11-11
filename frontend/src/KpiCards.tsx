@@ -1,12 +1,7 @@
-interface SummaryData {
-  roomsMonitored: number;
-  roomsNeedingReview: number;
-  potentialSavingsKwh: number;
-  potentialSavingsMyr: number;
-}
+import type { CampusSummary } from './api';
 
 interface KpiCardsProps {
-  summary: SummaryData;
+  summary: CampusSummary;
 }
 
 export function KpiCards({ summary }: KpiCardsProps) {

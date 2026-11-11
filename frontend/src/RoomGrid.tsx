@@ -1,41 +1,19 @@
-interface Room {
-  roomId: string;
-  occupancy: number | null;
-  sensorStatus: string;
-  classInSession: boolean;
-  minutesToNextClass: number | null;
-  devices: {
-    acOn: boolean;
-    lightsOn: boolean;
-  };
-  analysis: {
-    status: string;
-    recommendationCode: string;
-    potentialSavingsKwh: number;
-  };
-}
+import type { RoomData } from './api';
 
 interface RoomGridProps {
-  rooms: Room[];
+  rooms: RoomData[];
 }
 
 export function RoomGrid({ rooms }: RoomGridProps) {
   return (
     <>
       <h2 style={{ fontSize: '18px', marginBottom: '12px' }}>Room Status Overview</h2>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
+      <div className="room-grid">
         {rooms.map((room) => (
-          <div key={room.roomId} style={{ backgroundColor: '#1e293b', padding: '20px', borderRadius: '10px', border: '1px solid #334155' }}>
+          <article key={room.roomId} aria-label={`Room ${room.roomId}`} className="room-card" data-status={room.analysis.status}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
               <h3 style={{ margin: 0, fontSize: '20px', color: '#f8fafc' }}>Room: {room.roomId}</h3>
-              <span style={{ 
-                padding: '4px 10px', 
-                borderRadius: '20px', 
-                fontSize: '12px', 
-                fontWeight: 'bold',
-                backgroundColor: room.analysis.status === 'review' ? '#ef4444' : room.analysis.status === 'unknown' ? '#92400e' : '#10b981',
-                color: '#fff' 
-              }}>
+              <span className="room-status">
                 {room.analysis.status.toUpperCase()}
               </span>
             </div>
@@ -59,7 +37,8 @@ export function RoomGrid({ rooms }: RoomGridProps) {
             <p style={{ margin: '8px 0', fontSize: '14px', color: '#cbd5e1' }}>
               <strong>Recommendation Code:</strong> <code style={{ backgroundColor: '#0f172a', padding: '2px 6px', borderRadius: '4px', color: '#38bdf8' }}>{room.analysis.recommendationCode}</code>
             </p>
-          </div>
+            <p><strong>Estimated potential savings:</strong> {room.analysis.potentialSavingsKwh} kWh</p>
+          </article>
         ))}
       </div>
     </>
