@@ -1,6 +1,32 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { fetchSnapshot } from '../src/api.ts';
+import { fetchScenarios, fetchSnapshot } from '../src/api.ts';
+
+const campus = { id: 'campus-overview', name: 'Campus overview', description: 'Four simulated classrooms.' };
+const catalog = (scenarios) => ({ apiVersion: '1.0', dataSource: 'simulation', scenarios });
+
+test('scenario discovery uses the catalog endpoint and preserves API order, IDs and labels', async () => {
+  const scenarios = [campus, { id: 'other-simulation', name: 'Other simulation', description: '' }];
+  const controller = new AbortController();
+  const request = async (url, { signal }) => {
+    assert.equal(url, '/api/v1/scenarios');
+    assert.equal(signal, controller.signal);
+    return Response.json(catalog(scenarios));
+  };
+  assert.deepEqual(await fetchScenarios(controller.signal, request), scenarios);
+});
+
+test('catalog request failures surface an API error and can be retried', async () => {
+  const unavailable = async () => Response.json({ error: { message: 'Catalog unavailable.' } }, { status: 500 });
+  await assert.rejects(fetchScenarios(undefined, unavailable), /HTTP 500: Catalog unavailable/);
+  assert.deepEqual(await fetchScenarios(undefined, async () => Response.json(catalog([campus]))), [campus]);
+});
+
+test('an empty, malformed, or duplicate-ID catalog is rejected', async () => {
+  for (const payload of [[], catalog([]), catalog([{ id: 'campus-overview' }]), catalog([campus, campus])]) {
+    await assert.rejects(fetchScenarios(undefined, async () => Response.json(payload)), /invalid scenario catalog/);
+  }
+});
 
 test('scenario value is expanded and safely encoded into the proxy URL', async () => {
   let requestedUrl;
