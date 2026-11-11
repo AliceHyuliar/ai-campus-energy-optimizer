@@ -1,0 +1,104 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:apu:campus-energy:snapshot:1.0",
+  "title": "Campus Energy Simulation Snapshot v1.0",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["apiVersion", "scenarioId", "dataSource", "snapshotAt", "analysisWindowMinutes", "tariffMyrPerKwh", "summary", "rooms", "ai"],
+  "properties": {
+    "apiVersion": { "const": "1.0" },
+    "scenarioId": { "enum": ["idle-room", "occupied-room", "class-soon", "stale-sensor"] },
+    "dataSource": { "const": "simulation" },
+    "snapshotAt": { "type": "string", "format": "date-time", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}Z$" },
+    "analysisWindowMinutes": { "type": "integer", "minimum": 1, "maximum": 1440 },
+    "tariffMyrPerKwh": { "type": "number", "minimum": 0 },
+    "summary": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["roomsMonitored", "roomsNeedingReview", "potentialSavingsKwh", "potentialSavingsMyr"],
+      "properties": {
+        "roomsMonitored": { "type": "integer", "minimum": 1 },
+        "roomsNeedingReview": { "type": "integer", "minimum": 0 },
+        "potentialSavingsKwh": { "$ref": "#/$defs/energy" },
+        "potentialSavingsMyr": { "type": "number", "minimum": 0 }
+      }
+    },
+    "rooms": { "type": "array", "minItems": 1, "items": { "$ref": "#/$defs/room" } },
+    "ai": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["status", "explanation"],
+      "properties": {
+        "status": { "const": "not_connected" },
+        "explanation": { "type": "null" }
+      }
+    }
+  },
+  "$defs": {
+    "energy": { "type": "number", "minimum": 0 },
+    "room": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["roomId", "occupancy", "sensorStatus", "classInSession", "minutesToNextClass", "devices", "analysis"],
+      "properties": {
+        "roomId": { "type": "string", "minLength": 1, "maxLength": 64 },
+        "occupancy": { "type": ["integer", "null"], "minimum": 0 },
+        "sensorStatus": { "enum": ["fresh", "stale", "missing"] },
+        "classInSession": { "type": "boolean" },
+        "minutesToNextClass": { "type": ["integer", "null"], "minimum": 0 },
+        "devices": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["acOn", "lightsOn"],
+          "properties": { "acOn": { "type": "boolean" }, "lightsOn": { "type": "boolean" } }
+        },
+        "analysis": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["status", "recommendationCode", "potentialSavingsKwh"],
+          "properties": {
+            "status": { "enum": ["review", "normal", "unknown"] },
+            "recommendationCode": { "enum": ["REVIEW_IDLE_ROOM", "NO_ACTION_OCCUPIED", "KEEP_ON_CLASS_SOON", "CHECK_SENSOR_DATA"] },
+            "potentialSavingsKwh": { "$ref": "#/$defs/energy" }
+          },
+          "oneOf": [
+            { "properties": { "status": { "const": "review" }, "recommendationCode": { "const": "REVIEW_IDLE_ROOM" } } },
+            { "properties": { "status": { "const": "normal" }, "recommendationCode": { "enum": ["NO_ACTION_OCCUPIED", "KEEP_ON_CLASS_SOON"] }, "potentialSavingsKwh": { "const": 0 } } },
+            { "properties": { "status": { "const": "unknown" }, "recommendationCode": { "const": "CHECK_SENSOR_DATA" }, "potentialSavingsKwh": { "const": 0 } } }
+          ]
+        }
+      },
+      "allOf": [
+        {
+          "if": { "properties": { "sensorStatus": { "enum": ["stale", "missing"] } } },
+          "then": { "properties": { "occupancy": { "type": "null" } } }
+        },
+        {
+          "if": { "properties": { "occupancy": { "type": "null" } } },
+          "then": { "properties": { "analysis": { "properties": { "status": { "const": "unknown" } } } } },
+          "else": { "properties": { "analysis": { "properties": { "status": { "enum": ["normal", "review"] } } } } }
+        },
+        {
+          "if": { "properties": { "analysis": { "properties": { "recommendationCode": { "const": "REVIEW_IDLE_ROOM" } } } } },
+          "then": {
+            "properties": {
+              "occupancy": { "const": 0 },
+              "sensorStatus": { "const": "fresh" },
+              "classInSession": { "const": false },
+              "minutesToNextClass": { "type": "integer", "minimum": 15 },
+              "devices": { "anyOf": [ { "properties": { "acOn": { "const": true } } }, { "properties": { "lightsOn": { "const": true } } } ] }
+            }
+          }
+        },
+        {
+          "if": { "properties": { "analysis": { "properties": { "recommendationCode": { "const": "NO_ACTION_OCCUPIED" } } } } },
+          "then": { "properties": { "occupancy": { "type": "integer", "minimum": 1 }, "sensorStatus": { "const": "fresh" } } }
+        },
+        {
+          "if": { "properties": { "analysis": { "properties": { "recommendationCode": { "const": "KEEP_ON_CLASS_SOON" } } } } },
+          "then": { "properties": { "occupancy": { "const": 0 }, "sensorStatus": { "const": "fresh" }, "classInSession": { "const": false }, "minutesToNextClass": { "type": "integer", "minimum": 0, "maximum": 15 } } }
+        }
+      ]
+    }
+  }
+}
